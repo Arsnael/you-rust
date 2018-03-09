@@ -1,0 +1,6 @@
+[package]
+name = "you-rust"
+version = "0.1.0"
+authors = ["Arsnael <rene.cordier@gmail.com>"]
+
+[dependencies]
