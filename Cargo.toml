@@ -3,4 +3,11 @@ name = "you-rust"
 version = "0.1.0"
 authors = ["Arsnael <rene.cordier@gmail.com>"]
 
+[[bin]]
+name = "you-rust"
+path = "src/main.rs"
+
 [dependencies]
+reqwest = "0.8"
+url = "1.7"
+clap = "2.31"
