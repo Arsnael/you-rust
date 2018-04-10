@@ -1,15 +1,17 @@
 extern crate reqwest;
 extern crate url;
 extern crate clap;
+extern crate pbr;
 
 use clap::{Arg, App};
+use pbr::ProgressBar;
 
-use reqwest::Client;
-use reqwest::Response;
+use reqwest::{Client, Response};
+use reqwest::header::ContentLength;
 
 use url::Url;
 
-use std::io::copy;
+use std::io::prelude::*;
 use std::fs::File;
 use std::collections::HashMap;
 
@@ -48,7 +50,7 @@ fn youtube_dl(url: &str) {
 
     let filename = format!("{}.{}", map["title"], extension);
 
-    println!("About to download video {} at the url: {}", filename, url);
+    println!("About to download video {}", filename);
 
     //getting video
     let resp = client.get(&url).send().unwrap();
@@ -65,10 +67,23 @@ fn parse_content(input: &str) -> HashMap<String, String> {
 }
 
 fn write(mut resp: Response, filename: &str) {
+    let size = resp.headers().get::<ContentLength>()
+                .map(|ct_len| **ct_len)
+                .unwrap_or(0);
+
+    let mut pb = ProgressBar::new(size);
+    pb.format("|#--|");
+
+    let mut buf = [0; 1024];
     let mut file = File::create(filename).unwrap();
 
-    match copy(&mut resp, &mut file) {
-        Ok(_) => println!("Download finished!"),
-        Err(msg) => println!("Error! {}", msg)
+    while let Ok(len) = resp.read(&mut buf){
+        if len == 0 {
+            break;
+        }
+        file.write_all(&buf[..len]).unwrap();
+        pb.add(len as u64);
     }
+
+    println!("Download finished!");
 }
